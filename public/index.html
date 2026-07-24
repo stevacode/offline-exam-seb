@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Testiranje</title>
+  <style>
+    body{
+    font-family: Arial, sans-serif;
+    font-size: 18px;
+    line-height: 1.5;
+    margin: 0;
+    background:#f5f6f8;
+    color:#1f2430;
+  }
+
+  .wrap{
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 28px;
+  }
+
+  .card{
+    background:#fff;
+    border-radius:12px;
+    padding: 26px;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+  }
+
+  h2{
+    margin: 0 0 18px;
+    font-size: 28px;
+    line-height: 1.2;
+  }
+
+  h3{
+    margin: 22px 0 12px;
+    font-size: 22px;
+    line-height: 1.25;
+  }
+
+  label{
+    display:block;
+    margin-top: 16px;
+    margin-bottom: 6px;
+    font-weight: 800;
+  }
+
+  input, select, button{
+    padding: 14px;
+    margin-top: 6px;
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid #d6d6d6;
+    font-size: 18px;
+  }
+
+  button{
+    cursor: pointer;
+    font-weight: 800;
+    margin-top: 14px;
+  }
+
+  button:disabled{
+    opacity:.55;
+    cursor: default;
+  }
+
+  .topbar{
+    display:flex;
+    justify-content:space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .pill{
+    padding: 10px 14px;
+    border-radius:999px;
+    background:#eef1f6;
+    font-weight:900;
+    font-size: 16px;
+  }
+
+  /* IZMENA: upozorenje kad ostane malo vremena */
+  .pill-danger{
+    background:#fdecec;
+    color:#b3261e;
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse{ 0%,100%{opacity:1} 50%{opacity:.55} }
+
+  .q{
+    font-size: 24px;
+    font-weight: 900;
+    margin: 18px 0;
+    line-height: 1.25;
+  }
+
+  .opt{
+    display:block;
+    padding: 14px;
+    border:1px solid #ddd;
+    border-radius:12px;
+    margin-top: 12px;
+    transition: border-color .12s, background .12s;
+  }
+  .opt:hover{ border-color:#9bb2d6; }
+
+  /* IZMENA: jasno isticanje izabrane opcije */
+  .opt-selected{
+    border-color:#3b6fd4;
+    background:#eef3fc;
+  }
+
+  .opt input{
+    width:auto;
+    margin-right: 12px;
+    transform: scale(1.2);
+  }
+
+  pre{
+    white-space:pre-wrap;
+    margin-top: 12px;
+    font-size: 16px;
+    line-height: 1.45;
+  }
+
+  .muted{
+    color:#666;
+    font-size: 14px;
+    margin-top: 14px;
+  }
+
+  .textblock{
+    white-space: pre-wrap;
+  }
+
+  .codeblock{
+    white-space: pre;
+    overflow-x: auto;
+    font-family: Consolas, "Courier New", monospace;
+    background: #f0f3f7;
+    border: 1px solid #d8dee9;
+    border-radius: 12px;
+    padding: 12px;
+    margin: 10px 0 0;
+    font-size: 16px;
+    line-height: 1.4;
+  }
+
+  .opt-content .codeblock{
+    margin-top: 8px;
+  }
+
+  /* IZMENA: kartice rezultata u boji */
+  .result-item{
+    border:1px solid #e0e4ea;
+    border-left-width:6px;
+    border-radius:12px;
+    padding:14px 16px;
+    margin-top:14px;
+  }
+  .ri-ok{ border-left-color:#2e9e5b; background:#f4fbf6; }
+  .ri-bad{ border-left-color:#d64545; background:#fdf5f5; }
+  .ri-head{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:900;
+  }
+  .ri-badge{ font-size:20px; }
+  .ri-ok .ri-badge{ color:#2e9e5b; }
+  .ri-bad .ri-badge{ color:#d64545; }
+  .ri-points{
+    margin-left:auto;
+    background:#fff;
+    border:1px solid #d8dee9;
+    border-radius:999px;
+    padding:2px 12px;
+    font-size:15px;
+    font-weight:800;
+  }
+  .ri-q{ font-weight:800; margin:10px 0 4px; }
+  .ri-line{ margin-top:8px; }
+  .ri-label{ font-size:14px; color:#555; font-weight:700; }
+
+  /* IZMENA: overlay centriran preko flexa */
+  .overlay{
+    position:fixed; inset:0;
+    background:rgba(0,0,0,.45);
+    align-items:center;
+    justify-content:center;
+  }
+  .overlay .box{
+    max-width:520px; width:90%;
+    background:#fff;
+    padding:22px;
+    border-radius:14px;
+  }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" id="screen-start">
+      <h2>Testiranje</h2>
+
+      <label>Izaberi test</label>
+      <select id="testSelect"></select>
+      <button id="refreshBtn">Osveži listu</button>
+
+      <label>Ime i prezime (obavezno)</label>
+      <input id="studentName" autocomplete="off"/>
+
+      <label>Odeljenje (obavezno)</label>
+      <input id="className" placeholder="npr. III-2" autocomplete="off"/>
+
+      <button id="startBtn">Počni test</button>
+    </div>
+
+    <div class="card" id="screen-test" style="display:none">
+      <div class="topbar">
+        <div class="pill" id="progressPill">Pitanje 0/0</div>
+        <div class="pill" id="timerPill">Vreme: 00:00</div>
+      </div>
+      <div class="q" id="questionText"></div>
+      <div id="options"></div>
+      <button id="nextBtn" disabled>Potvrdi i sledeće</button>
+      <button id="finishBtn">Kraj testa</button>
+      <p class="muted">Nema povratka na prethodna pitanja.</p>
+    </div>
+
+    <div class="card" id="screen-result" style="display:none">
+      <h2>Rezultat</h2>
+      <div id="summary"></div>
+      <h3>Pregled odgovora</h3>
+      <div id="details"></div>
+      <a href="/quit"><button>IZLAZ</button></a>
+    </div>
+  </div>
+
+  <div id="confirmOverlay" class="overlay" style="display:none">
+    <div class="box">
+      <h3 style="margin:0 0 10px;">Završi test?</h3>
+      <p id="confirmText" style="margin:0 0 16px;">Da li si siguran? Nakon završetka nema povratka.</p>
+      <button id="btnNo">Ne</button>
+      <button id="btnYes" style="margin-top:10px;">Da, završi</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
