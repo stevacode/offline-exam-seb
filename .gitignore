@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Runtime data
+results/
+*.csv
+*.log
+
+# Local environment and secrets
+.env
+.env.*
+config.local.json
+
+# Real exam files contain answer keys. Keep only the public demo test.
+tests/*.json
+!tests/proba.json
+
+# Safe Exam Browser configs may contain local/security settings.
+*.seb
+
+# Portable/build artifacts
+node.exe
+OfflineTest.exe
+*.exe
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
