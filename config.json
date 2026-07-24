@@ -1,0 +1,11 @@
+{
+  "port": 3000,
+  "show_correct_answers_to_student": true,
+  "grade_thresholds": [
+    { "min_percent": 0,  "grade": 1 },
+    { "min_percent": 51, "grade": 2 },
+    { "min_percent": 66, "grade": 3 },
+    { "min_percent": 81, "grade": 4 },
+    { "min_percent": 91, "grade": 5 }
+  ]
+}
