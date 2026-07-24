@@ -1,0 +1,42 @@
+{
+  "title": "Proba - OOP",
+  "duration_minutes": 15,
+  "questions": [
+    {
+      "id": 1,
+      "text": "Koja tvrdnja je tacna za metode klase?",
+      "options": [
+        "Metode predstavljaju ponasanje objekta",
+        "Metode su uvek iste sto i atributi",
+        "Metode ne smeju imati parametre",
+        "Metode se mogu pisati samo van klase"
+      ],
+      "correct_index": 0,
+      "points": 1
+    },
+    {
+      "id": 2,
+      "text": "Sta je enkapsulacija?",
+      "options": [
+        "Skrivanje internih detalja i pristup preko metoda",
+        "Nasledjivanje vise klasa odjednom",
+        "Brisanje objekta iz memorije",
+        "Pisanje koda bez klasa"
+      ],
+      "correct_index": 0,
+      "points": 1
+    },
+    {
+      "id": 3,
+      "text": "Konstruktor je metoda koja:",
+      "options": [
+        "Se poziva pri kreiranju objekta",
+        "Brise objekat",
+        "Mora da vraca vrednost",
+        "Se poziva samo rucno"
+      ],
+      "correct_index": 0,
+      "points": 1
+    }
+  ]
+}
