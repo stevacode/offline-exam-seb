@@ -54,7 +54,6 @@
           </div>
         </div>
         <p id="msg" class="msg"></p>
-        <p class="muted" id="dirInfo"></p>
         <div style="overflow:auto; max-height:60vh">
           <table id="tbl">
             <thead><tr>
@@ -101,7 +100,6 @@ function showMsg(text, kind){
 
 function render(data){
   $("count").textContent = data.count;
-  $("dirInfo").textContent = "Folder sa rezultatima: " + data.resultsDir;
   const tb = $("tbl").querySelector("tbody");
   tb.innerHTML = "";
   data.rows.forEach(x => {

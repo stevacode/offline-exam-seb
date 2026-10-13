@@ -122,7 +122,7 @@ Each submission is saved to `results/` next to `server.js`:
 - `<attempt-id>.json` with the student, score, grade, time used and every answer
 - `rezultati.csv`, one row per submission
 
-If that folder isn't writable, the server picks the fallback folder above and shows its path in the admin page.
+If that folder isn't writable, the server picks the fallback folder above and logs its path on startup.
 
 ## Windows Lab Usage
 
