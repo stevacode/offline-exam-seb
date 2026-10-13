@@ -12,6 +12,8 @@ const APP_DIR = isPkg ? path.dirname(process.execPath) : __dirname;
 const TESTS_DIR = path.join(APP_DIR, "tests");
 const RESULTS_DIR = path.join(APP_DIR, "results");
 const CONFIG_PATH = path.join(APP_DIR, "config.json");
+// IZMENA: u repou je samo config.example.json (bez lozinke); pravi config.json je lokalan
+const CONFIG_EXAMPLE_PATH = path.join(APP_DIR, "config.example.json");
 const PUBLIC_DIR = path.join(__dirname, "public");
 
 // IZMENA: CSV zaglavlje na jednom mestu (umesto unutar /api/submit handlera)
@@ -69,13 +71,28 @@ function loadConfig() {
       { min_percent: 91, grade: 5 }
     ]
   };
-  try {
-    if (!fs.existsSync(CONFIG_PATH)) return def;
-    const cfg = JSON.parse(fs.readFileSync(CONFIG_PATH, "utf-8"));
-    return { ...def, ...cfg };
-  } catch {
-    return def;
+  // IZMENA: ako config.json ne postoji, napravi ga iz config.example.json
+  if (!fs.existsSync(CONFIG_PATH) && fs.existsSync(CONFIG_EXAMPLE_PATH)) {
+    try {
+      fs.copyFileSync(CONFIG_EXAMPLE_PATH, CONFIG_PATH);
+      console.warn("config.json nije postojao - napravljen je iz config.example.json.");
+    } catch (e) {
+      console.warn("UPOZORENJE: ne mogu da napravim config.json:", e.code || e.message);
+    }
   }
+  let cfg = def;
+  try {
+    if (fs.existsSync(CONFIG_PATH)) {
+      cfg = { ...def, ...JSON.parse(fs.readFileSync(CONFIG_PATH, "utf-8")) };
+    }
+  } catch (e) {
+    // IZMENA: greska u config.json (npr. zaboravljen zarez) se vise ne guta tiho
+    console.error("GRESKA u config.json (koriste se podrazumevana podesavanja):", e.message);
+  }
+  if (!cfg.admin_password) {
+    console.warn("UPOZORENJE: admin_password nije podesen u config.json - admin stranica je zakljucana.");
+  }
+  return cfg;
 }
 
 function listJsonFiles(dir) {
@@ -307,7 +324,11 @@ app.post("/api/submit", (req, res) => {
 // ===== ADMIN: pregled rezultata, statistika, preuzimanje CSV =====
 function adminOk(req, res) {
   const pw = (req.body && req.body.password) || req.query.password || "";
-  if (!cfg.admin_password || pw !== cfg.admin_password) {
+  if (!cfg.admin_password) {
+    res.status(401).json({ error: "Lozinka nije podesena: dodaj admin_password u config.json i restartuj server." });
+    return false;
+  }
+  if (pw !== cfg.admin_password) {
     res.status(401).json({ error: "Pogresna lozinka." });
     return false;
   }

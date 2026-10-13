@@ -10,6 +10,8 @@ results/
 .env
 .env.*
 config.local.json
+# Pravi config.json drzi lozinku -> samo lokalno. U repou je config.example.json.
+config.json
 
 # Real exam files contain answer keys. Keep only the public demo test.
 tests/*.json

@@ -46,7 +46,7 @@ public/
   admin.html      Teacher page: results, per-question stats, CSV export
 tests/
   proba.json      Demo test (real exams are git-ignored)
-config.json       Port, grading thresholds, display options
+config.example.json  Settings template (copied to config.json on first run)
 server.js         Express API, grading and result storage
 pokreni.bat       Starts the server, waits for port 3000, opens SEB with Exam.seb
 pokreni.vbs       Runs pokreni.bat without a console window
@@ -63,11 +63,11 @@ npm start
 
 Open `http://127.0.0.1:3000` for the test and `http://127.0.0.1:3000/admin` for results.
 
-The admin page stays locked until you set a password in `config.json` (see below). Don't commit your real password, since this repository is public.
+On first run the server copies `config.example.json` to `config.json`. The admin page stays locked until you set `admin_password` there (see below). `config.json` is git-ignored, so your real password never ends up in the repository.
 
 ## Configuration
 
-`config.json`:
+`config.json` (created from `config.example.json`, local only):
 
 ```json
 {
@@ -165,4 +165,4 @@ Never commit:
 - `.seb` configuration files
 - `node_modules/`, `node.exe` or generated `.exe` files
 
-`.gitignore` already covers everything above except the password. The repository is meant to hold source code and the demo test only.
+`.gitignore` already covers all of the above, including `config.json`. The repository is meant to hold source code and the demo test only.
