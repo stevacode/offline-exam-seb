@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Rezultati — admin</title>
+  <style>
+    body{ font-family: Arial, sans-serif; font-size:16px; line-height:1.5; margin:0; background:#f5f6f8; color:#1f2430; }
+    .wrap{ max-width:1100px; margin:0 auto; padding:24px; }
+    .card{ background:#fff; border-radius:12px; padding:22px; box-shadow:0 2px 10px rgba(0,0,0,.08); margin-bottom:18px; }
+    h2{ margin:0 0 16px; font-size:26px; }
+    h3{ margin:18px 0 10px; font-size:20px; }
+    input, button{ padding:12px; border-radius:10px; border:1px solid #d6d6d6; font-size:16px; }
+    button{ cursor:pointer; font-weight:800; background:#3b6fd4; color:#fff; border:none; }
+    button.sec{ background:#eef1f6; color:#1f2430; }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    table{ border-collapse:collapse; width:100%; margin-top:6px; font-size:14px; }
+    th, td{ border:1px solid #e2e6ec; padding:8px 10px; text-align:left; }
+    th{ background:#f0f3f7; position:sticky; top:0; }
+    tr:nth-child(even){ background:#fafbfc; }
+    .muted{ color:#666; font-size:13px; }
+    .pill{ display:inline-block; padding:2px 10px; border-radius:999px; font-weight:800; font-size:13px; }
+    .g1{ background:#fdecec; color:#b3261e; } .g2{ background:#fff3e0; color:#a15c00; }
+    .g3{ background:#fff8e1; color:#8a6d00; } .g4{ background:#e8f5e9; color:#2e7d32; } .g5{ background:#e3f2fd; color:#1565c0; }
+    .bar{ height:10px; background:#e2e6ec; border-radius:6px; overflow:hidden; min-width:120px; }
+    .bar > span{ display:block; height:100%; background:#2e9e5b; }
+    .err{ color:#b3261e; font-weight:700; }
+    .hidden{ display:none; }
+    .ok{ color:#2e7d32; font-weight:700; }
+    .msg{ margin:8px 0 0; min-height:1.2em; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" id="login">
+      <h2>Rezultati — prijava</h2>
+      <div class="row">
+        <input id="pw" type="password" placeholder="Lozinka" style="flex:1; min-width:200px"/>
+        <button id="loginBtn">Uđi</button>
+        <button class="sec" id="backBtn1">← Nazad na test</button>
+      </div>
+      <p id="loginErr" class="err"></p>
+    </div>
+
+    <div id="panel" class="hidden">
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <h2 style="margin:0">Rezultati (<span id="count">0</span>)</h2>
+          <div class="row">
+            <button class="sec" id="refreshBtn">Osveži</button>
+            <button id="csvBtn">Preuzmi CSV</button>
+            <button class="sec" id="logoutBtn">Odjava</button>
+            <button class="sec" id="backBtn2">← Nazad na test</button>
+          </div>
+        </div>
+        <p id="msg" class="msg"></p>
+        <p class="muted" id="dirInfo"></p>
+        <div style="overflow:auto; max-height:60vh">
+          <table id="tbl">
+            <thead><tr>
+              <th>Vreme</th><th>Učenik</th><th>Odeljenje</th><th>Test</th>
+              <th>Poeni</th><th>%</th><th>Ocena</th><th>Vreme (s)</th><th>Isteklo</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 style="margin:0 0 6px">Statistika po pitanju</h2>
+        <p class="muted">Koliko je učenika tačno odgovorilo na svako pitanje (po testu).</p>
+        <div id="stats"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+let pw = "";
+const $ = id => document.getElementById(id);
+
+async function load() {
+  const r = await fetch("/api/admin/results", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ password: pw })
+  });
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error || "Greška");
+  return data;
+}
+
+function gradeClass(g){ return "g"+(Number(g)||1); }
+function esc(s){
+  return String(s ?? "").replace(/[&<>"']/g, c =>
+    ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+}
+function showMsg(text, kind){
+  const m = $("msg");
+  m.textContent = text || "";
+  m.className = "msg " + (kind || "");
+}
+
+function render(data){
+  $("count").textContent = data.count;
+  $("dirInfo").textContent = "Folder sa rezultatima: " + data.resultsDir;
+  const tb = $("tbl").querySelector("tbody");
+  tb.innerHTML = "";
+  data.rows.forEach(x => {
+    const tr = document.createElement("tr");
+    tr.innerHTML =
+      `<td>${esc(x.timestamp)}</td><td>${esc(x.name)}</td><td>${esc(x.klasa)}</td>`+
+      `<td>${esc(x.test)}</td><td>${esc(x.earned)}/${esc(x.total)}</td><td>${esc(x.percent)}</td>`+
+      `<td><span class="pill ${gradeClass(x.grade)}">${esc(x.grade)}</span></td>`+
+      `<td>${esc(x.used_seconds)}</td><td>${x.expired?"DA":"ne"}</td>`;
+    tb.appendChild(tr);
+  });
+
+  const st = $("stats"); st.innerHTML = "";
+  const tests = Object.keys(data.perQuestion);
+  if (!tests.length){ st.innerHTML = '<p class="muted">Još nema podataka.</p>'; return; }
+  tests.forEach(tf => {
+    const h = document.createElement("h3"); h.textContent = tf; st.appendChild(h);
+    const tbl = document.createElement("table");
+    tbl.innerHTML = "<thead><tr><th>#</th><th>Pitanje</th><th>Tačno</th><th>Uspeh</th></tr></thead><tbody></tbody>";
+    const body = tbl.querySelector("tbody");
+    const qs = data.perQuestion[tf];
+    Object.keys(qs).forEach((qid, i) => {
+      const q = qs[qid];
+      const pct = q.total ? Math.round(q.correct/q.total*100) : 0;
+      const tr = document.createElement("tr");
+      const txt = (q.text||"").replace(/```[\s\S]*?```/g,"[kod]").slice(0,80);
+      tr.innerHTML = `<td>${i+1}</td><td>${esc(txt)}</td><td>${q.correct}/${q.total}</td>`+
+        `<td><div class="bar"><span style="width:${pct}%"></span></div> ${pct}%</td>`;
+      body.appendChild(tr);
+    });
+    st.appendChild(tbl);
+  });
+}
+
+async function refresh(){
+  showMsg("");
+  try { render(await load()); }
+  catch(e){ showMsg("Greška: " + e.message, "err"); }
+}
+
+// CSV se preuzima u pozadini -> stranica se NE napušta.
+// Ako nema rezultata, poruka se pojavi u panelu umesto golog JSON ekrana.
+async function downloadCsv(){
+  showMsg("");
+  let r;
+  try {
+    r = await fetch("/api/admin/csv?password=" + encodeURIComponent(pw));
+  } catch(e){ return showMsg("Server ne odgovara.", "err"); }
+  if (!r.ok){
+    const d = await r.json().catch(() => ({}));
+    return showMsg(d.error || ("Greška (HTTP " + r.status + ")"), "err");
+  }
+  const blob = await r.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "rezultati.csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+  showMsg("CSV je preuzet (rezultati.csv).", "ok");
+}
+
+function logout(){
+  pw = "";
+  $("pw").value = "";
+  $("loginErr").textContent = "";
+  showMsg("");
+  $("panel").classList.add("hidden");
+  $("login").classList.remove("hidden");
+  $("pw").focus();
+}
+
+function backToTest(){ window.location.href = "/"; }
+
+$("loginBtn").addEventListener("click", async () => {
+  pw = $("pw").value;
+  try {
+    const data = await load();
+    $("login").classList.add("hidden");
+    $("panel").classList.remove("hidden");
+    render(data);
+  } catch(e){ $("loginErr").textContent = e.message; }
+});
+$("pw").addEventListener("keydown", e => { if(e.key==="Enter") $("loginBtn").click(); });
+$("refreshBtn").addEventListener("click", refresh);
+$("csvBtn").addEventListener("click", downloadCsv);
+$("logoutBtn").addEventListener("click", logout);
+$("backBtn1").addEventListener("click", backToTest);
+$("backBtn2").addEventListener("click", backToTest);
+// Esc = nazad na test (radi i u SEB-u, gde nema dugmeta "nazad")
+document.addEventListener("keydown", e => { if (e.key === "Escape") backToTest(); });
+$("pw").focus();
+</script>
+</body>
+</html>

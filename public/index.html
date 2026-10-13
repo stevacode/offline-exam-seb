@@ -47,6 +47,7 @@
   }
 
   input, select, button{
+    box-sizing: border-box; /* IZMENA: polja vise ne izlaze van kartice */
     padding: 14px;
     margin-top: 6px;
     width: 100%;
@@ -215,6 +216,10 @@
       <input id="className" placeholder="npr. III-2" autocomplete="off"/>
 
       <button id="startBtn">Počni test</button>
+
+      <div style="margin-top:18px; text-align:right">
+        <a id="adminLink" href="/admin" class="muted" style="text-decoration:none">· admin ·</a>
+      </div>
     </div>
 
     <div class="card" id="screen-test" style="display:none">

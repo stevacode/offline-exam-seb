@@ -304,6 +304,62 @@ app.post("/api/submit", (req, res) => {
   });
 });
 
+// ===== ADMIN: pregled rezultata, statistika, preuzimanje CSV =====
+function adminOk(req, res) {
+  const pw = (req.body && req.body.password) || req.query.password || "";
+  if (!cfg.admin_password || pw !== cfg.admin_password) {
+    res.status(401).json({ error: "Pogresna lozinka." });
+    return false;
+  }
+  return true;
+}
+
+app.get("/admin", (_req, res) => sendPublic(res, "admin.html", "html"));
+
+app.post("/api/admin/results", (req, res) => {
+  if (!adminOk(req, res)) return;
+  let files = [];
+  try { files = fs.readdirSync(resultsDir).filter(f => f.toLowerCase().endsWith(".json")); } catch {}
+  const rows = [];
+  const perQuestion = {}; // test_file -> { qid -> {text, correct, total} }
+  for (const f of files) {
+    try {
+      const d = JSON.parse(fs.readFileSync(path.join(resultsDir, f), "utf-8"));
+      rows.push({
+        timestamp: d.timestamp,
+        name: d.student && d.student.name,
+        klasa: d.student && d.student.class,
+        test: d.test_title,
+        earned: d.score && d.score.earned_points,
+        total: d.score && d.score.total_points,
+        percent: d.score && d.score.percent,
+        grade: d.score && d.score.grade,
+        used_seconds: d.score && d.score.used_seconds,
+        expired: d.expired
+      });
+      const tf = d.test_title || d.test_file || "?";
+      perQuestion[tf] = perQuestion[tf] || {};
+      (d.answers || []).forEach(a => {
+        const q = perQuestion[tf][a.id] = perQuestion[tf][a.id] || { text: a.text, correct: 0, total: 0 };
+        q.total++;
+        if (a.selected_index != null && a.selected_index === a.correct_index) q.correct++;
+      });
+    } catch {}
+  }
+  rows.sort((a, b) => String(b.timestamp || "").localeCompare(String(a.timestamp || "")));
+  res.json({ resultsDir, count: rows.length, rows, perQuestion });
+});
+
+app.get("/api/admin/csv", (req, res) => {
+  if (!adminOk(req, res)) return;
+  const csvPath = path.join(resultsDir, "rezultati.csv");
+  if (!fs.existsSync(csvPath)) return res.status(404).json({ error: "Jos nema rezultata." });
+  res.setHeader("Content-Disposition", 'attachment; filename="rezultati.csv"');
+  res.setHeader("Content-Type", "text/csv; charset=utf-8");
+  // BOM da Excel ispravno procita nasa slova (c, c, s, z, dj)
+  res.send("\uFEFF" + fs.readFileSync(csvPath, "utf-8"));
+});
+
 app.get("/quit", (_req, res) => {
   res.setHeader("Content-Type", "text/html; charset=utf-8");
   res.end("<h2>Završeno.</h2><p>Zatvaranje...</p>");

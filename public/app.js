@@ -361,6 +361,13 @@ ui.finishBtn.addEventListener("click", () => {
   el.addEventListener("keydown", e => { if (e.key === "Enter") startTest(); })
 );
 
+// IZMENA: tajna precica za admin stranicu (Ctrl+Alt+A)
+document.addEventListener("keydown", e => {
+  if (e.ctrlKey && e.altKey && (e.key === "a" || e.key === "A")) {
+    window.location = "/admin";
+  }
+});
+
 (async () => {
   await refreshTests();
   show("start");

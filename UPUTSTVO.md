@@ -45,6 +45,17 @@ Ako nalog nema pravo upisa tu, server sam pređe na:
 Da rezultati uvek ostanu pored aplikacije: daj nalogu „Ucenik" pravo upisa
 nad tim folderom (desni klik → Properties → Security → Edit → Modify).
 
+## 5) Admin — pregled rezultata
+
+1. U `config.json` dodaj polje `"admin_password": "tvoja_lozinka"`.
+   Bez tog polja admin je zaključan (nijedna lozinka ne prolazi).
+2. Dok server radi, u **običnom pretraživaču** otvori `http://127.0.0.1:3000/admin`
+   (ili Ctrl+Alt+A / link „· admin ·" sa početnog ekrana).
+3. U panelu: tabela rezultata, statistika po pitanju, „Preuzmi CSV",
+   „Odjava" i „← Nazad na test" (ili taster Esc).
+
+Pravu lozinku ne stavljaj u repozitorijum — `config.json` na lab mašinama drži lokalno.
+
 ## Provera da je offline
 Na jednoj mašini isključi WiFi (ostavi mrežnu karticu omogućenu u Device Manageru),
 dvoklik na `pokreni.vbs`, prođi test do „Kraj testa". Ako rezultat legne — dokazano.
