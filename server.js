@@ -252,7 +252,11 @@ app.post("/api/submit", (req, res) => {
   const totalPoints = detailed.reduce((s, r) => s + r.points, 0);
   const earnedPoints = detailed.reduce((s, r) => s + r.earned_points, 0);
   const percent = totalPoints ? (earnedPoints / totalPoints) * 100 : 0;
-  const grade = computeGrade(percent, cfg.grade_thresholds);
+  const thresholds =
+    Array.isArray(test.grade_thresholds) && test.grade_thresholds.length
+      ? test.grade_thresholds
+      : cfg.grade_thresholds;
+  const grade = computeGrade(percent, thresholds);
 
   const usedSeconds = Math.round((Math.min(now, a.deadlineMs) - a.startedAt) / 1000);
   const timestamp = new Date().toISOString().replace("T", " ").slice(0, 19);
